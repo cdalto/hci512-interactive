@@ -60,7 +60,7 @@
 
 		// Define linear scale for output
 		var color = d3.scale.linear()
-			.range(["rgb(213,222,217)", "rgb(69,173,168)", "rgb(84,36,55)", "rgb(217,91,67)"]);
+			.range(["#C5DCD1", "#A3C7B5", "#81B29A", "#5E8271", "#3B5146"]);
 
 		var legendText = ["Cities Lived", "States Lived", "States Visited", "Nada"];
 
@@ -77,8 +77,8 @@
 			.style("opacity", 0);
 
 		// Load in my states data!
-		d3.csv("data/stateslived.csv", function (data) {
-			color.domain([0, 1, 2, 3]); // setting the range of the input data
+		d3.csv("data/states-gdp.csv", function (data) {
+			color.domain([50000, 150000, 500000, 1500000, 2500000]); // setting the range of the input data
 
 			// Load GeoJSON data and merge with states data
 			d3.json("data/us-states.json", function (json) {
@@ -90,7 +90,7 @@
 					var dataState = data[i].state;
 
 					// Grab data value 
-					var dataValue = data[i].visited;
+					var dataValue = data[i].y2016;
 
 					// Find the corresponding state inside the GeoJSON
 					for (var j = 0; j < json.features.length; j++) {
@@ -99,7 +99,7 @@
 						if (dataState == jsonState) {
 
 							// Copy the data value into the JSON
-							json.features[j].properties.visited = dataValue;
+							json.features[j].properties.y2016 = dataValue;
 
 							// Stop looking through the JSON
 							break;
@@ -116,18 +116,34 @@
 					.style("stroke", "#fff")
 					.style("stroke-width", "1")
 					.style("fill", function (d) {
-
 						// Get data value
-						var value = d.properties.visited;
+						var value = d.properties.y2016;
 
-						if (value) {
-							//If value exists…
-							return color(value);
-						} else {
-							//If value is undefined…
-							return "rgb(213,222,217)";
+						if (value < 50000) {
+							return "#C5DCD1";
+						} else if (value < 150000) {
+							return "#A3C7B5";
+						} else if (value < 500000) {
+							return "#81B29A";
+						} else if (value < 1500000) {
+							return "#5E8271";
+						} else if (value < 2500000) {
+							return "#3B5146";
 						}
-					});
+					})
+					.on("mouseover", function (d) {
+						div.transition()
+							.duration(200)
+							.style("opacity", .9);
+						div.text(d.properties.name)
+							.style("left", (d3.event.pageX) + "px")
+							.style("top", (d3.event.pageY - 28) + "px");
+					})
+					.on("mouseout", function (d) {
+						div.transition()
+							.duration(500)
+							.style("opacity", 0);
+					});;
 
 				// Map the cities I have lived in!
 				d3.csv("data/cities-lived.csv", function (data) {
